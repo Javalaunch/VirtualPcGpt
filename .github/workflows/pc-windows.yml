@@ -1,0 +1,54 @@
+name: PC Windows Temporario
+
+on:
+  workflow_dispatch:
+
+jobs:
+  windows-pc:
+    runs-on: windows-latest
+    timeout-minutes: 10080
+
+    steps:
+      - name: Verificar computador
+        shell: pwsh
+        run: |
+          Write-Host "===================================="
+          Write-Host "      WINDOWS PC TEMPORARIO"
+          Write-Host "===================================="
+
+          Write-Host ""
+          Write-Host "PROCESSADOR:"
+          Get-CimInstance Win32_Processor |
+            Select-Object Name, NumberOfCores, NumberOfLogicalProcessors
+
+          Write-Host ""
+          Write-Host "MEMORIA RAM:"
+          $ram = Get-CimInstance Win32_ComputerSystem
+          Write-Host ("RAM: {0:N2} GB" -f ($ram.TotalPhysicalMemory / 1GB))
+
+          Write-Host ""
+          Write-Host "WINDOWS:"
+          Get-CimInstance Win32_OperatingSystem |
+            Select-Object Caption, Version, OSArchitecture
+
+          Write-Host ""
+          Write-Host "DISCO:"
+          Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'" |
+            Select-Object DeviceID,
+              @{Name="TotalGB";Expression={[math]::Round($_.Size / 1GB,2)}},
+              @{Name="LivreGB";Expression={[math]::Round($_.FreeSpace / 1GB,2)}}
+
+          Write-Host ""
+          Write-Host "PC CRIADO COM SUCESSO!"
+          Write-Host "===================================="
+
+      - name: Manter sessao ativa
+        shell: pwsh
+        run: |
+          Write-Host "O Windows esta ativo."
+          Write-Host "Esta maquina e temporaria."
+
+          for ($i = 1; $i -le 350; $i++) {
+            Write-Host "Sessao ativa - minuto $i"
+            Start-Sleep -Seconds 60
+          }
